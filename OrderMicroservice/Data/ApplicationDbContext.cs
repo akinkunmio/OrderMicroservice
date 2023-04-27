@@ -10,10 +10,12 @@ namespace OrderMicroservice.Data
           
         }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Order>()
-                .HasKey(e => new { e.OrderId, e.ProductId});
+                .HasKey(e => new { e.OrderId});
         }
     }
 }

@@ -6,43 +6,41 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrderMicroservice.Data;
-using OrderMicroservice.DTOs;
 using OrderMicroservice.Models;
 
 namespace OrderMicroservice.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/order")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class OrderController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
-        public OrdersController(ApplicationDbContext context)
+        public OrderController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Orders
+        // GET: api/Order
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
-        {
-              if (_context.Orders == null)
-              {
-                  return NotFound();
-              }
-              
-            return await _context.Orders.ToListAsync();
-        }
-
-        // GET: api/Orders/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<dynamic>> GetOrder(int id)
         {
           if (_context.Orders == null)
           {
               return NotFound();
           }
-            var order = await _context.Orders.Where(o => o.OrderId == id).ToListAsync();
+            return await _context.Orders.ToListAsync();
+        }
+
+        // GET: api/Order/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Order>> GetOrder(int id)
+        {
+          if (_context.Orders == null)
+          {
+              return NotFound();
+          }
+            var order = await _context.Orders.FindAsync(id);
 
             if (order == null)
             {
@@ -52,7 +50,7 @@ namespace OrderMicroservice.Controllers
             return order;
         }
 
-        // PUT: api/Orders/5
+        // PUT: api/Order/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutOrder(int id, Order order)
@@ -83,28 +81,22 @@ namespace OrderMicroservice.Controllers
             return NoContent();
         }
 
-        // POST: api/Orders
+        // POST: api/Order
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Order>> PostOrder(OrderDto orderDto)
+        public async Task<ActionResult<Order>> PostOrder(Order order)
         {
           if (_context.Orders == null)
           {
               return Problem("Entity set 'ApplicationDbContext.Orders'  is null.");
           }
-            Order order = new Order
-            {
-                 OrderBy = orderDto.Name ?? string.Empty,
-                 DateOrdered = DateTime.Now,
-                 ProductId = orderDto.ProductId,
-            };
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetOrder", new { id = order.OrderId }, order);
         }
 
-        // DELETE: api/Orders/5
+        // DELETE: api/Order/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
@@ -112,14 +104,13 @@ namespace OrderMicroservice.Controllers
             {
                 return NotFound();
             }
-
-            var order = await _context.Orders.Where(o => o.OrderId ==id).ToListAsync();
+            var order = await _context.Orders.FindAsync(id);
             if (order == null)
             {
                 return NotFound();
             }
 
-            _context.Orders.RemoveRange(order);
+            _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
 
             return NoContent();
